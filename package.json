@@ -1,0 +1,12 @@
+{
+  "name": "corsairs-of-the-shattered-sea",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Medieval pirate naval battles in the browser, with a multiplayer server",
+  "scripts": {
+    "start": "node server/server.js",
+    "tunnel": "node server/server.js --tunnel",
+    "lan": "node server/server.js --lan"
+  },
+  "engines": { "node": ">=18" }
+}

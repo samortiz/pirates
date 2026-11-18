@@ -1,0 +1,24 @@
+# Dependencies (none today, but keep them out if added)
+node_modules/
+
+# Local cloudflared binary (looked up at ./bin/cloudflared)
+bin/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db

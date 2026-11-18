@@ -1,0 +1,34 @@
+html,body{margin:0;height:100%;overflow:hidden;background:#123;font-family:Georgia,'Palatino Linotype',serif;color:#2b1d0e}
+canvas{display:block;width:100vw;height:100vh}
+.hidden{display:none!important}
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,15,30,.55);padding:16px;box-sizing:border-box}
+#panel{background:linear-gradient(160deg,#f0e2b8,#dcc590);border:4px solid #5a3b1a;outline:2px solid #2b1d0e;border-radius:6px;box-shadow:0 12px 50px rgba(0,0,0,.6);padding:20px 28px;max-width:900px;width:100%;max-height:94vh;overflow:auto;box-sizing:border-box}
+h1{margin:0 0 8px;font-size:30px;text-align:center;letter-spacing:1px;color:#4a1c0c}
+h2{margin:0 0 10px;text-align:center;font-weight:normal;font-style:italic;font-size:17px}
+h3{margin:0 0 6px;border-bottom:1px solid #8a6a3a;font-size:17px;color:#4a1c0c}
+p{margin:8px 0;line-height:1.45}
+button{font-family:inherit;font-size:15px;padding:7px 13px;margin:3px 2px;background:#6b4423;color:#f5e9c8;border:2px solid #2b1d0e;border-radius:4px;cursor:pointer}
+button:hover:not(:disabled){background:#8a5a2e}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:#8b1a1a;font-size:17px;padding:9px 22px}
+button.primary:hover{background:#b02525}
+.row{text-align:center;margin-top:10px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;margin:10px 0}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.stats{text-align:center;background:rgba(90,59,26,.14);padding:7px;border-radius:4px;font-size:15px}
+.stats b{color:#4a1c0c}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;margin:2px 0}
+.hint{font-size:13px;font-style:italic;text-align:center;opacity:.85}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:14px;max-width:520px;margin:8px auto}
+.keys b{text-align:right;color:#4a1c0c}
+.duel{display:flex;justify-content:space-around;align-items:center;text-align:center;margin:10px 0}
+.duel .big{font-size:44px;color:#8b1a1a;font-weight:bold}
+.duel .vs{font-size:40px}
+.log{text-align:center;min-height:48px}
+ul{margin:6px 0;padding-left:22px;line-height:1.5}
+.tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:12px 0 4px;border-bottom:3px solid #5a3b1a}
+.tabs button.tab{margin:0;border-radius:6px 6px 0 0;border-bottom:none;background:#7a5a36;font-size:15px;padding:7px 14px}
+.tabs button.tab:hover{background:#8a5a2e}
+.tabs button.tab.on{background:#5a3b1a;color:#ffe9a8;font-weight:bold}
+.badge{display:inline-block;min-width:16px;padding:0 4px;border-radius:8px;background:#8b1a1a;color:#fff;font-size:11px;line-height:16px;text-align:center;font-weight:bold}
+.district{min-height:180px}
