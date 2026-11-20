@@ -182,8 +182,11 @@ const Quests = {
   tavernHtml(btn) {
     const s = Campaign.s, P = s.prisoners, ransom = P.men * 10 + P.value;
     return `<div class="item"><span>Prisoners in the hold: ${P.men} sailors, ${P.officers} officers</span>${btn('ransom', P.men + P.officers ? `Ransom ${ransom}g` : 'None', P.men + P.officers > 0)}</div>
-      <div class="item"><span>Work the docks for three days (only for the desperate)</span>${btn('work', '+45g', s.gold < 150)}</div>`;
+      <div class="item"><span>Work the docks for three days (only for the desperate)</span>${this.workWait() > 0
+        ? btn('work', `Rested in ${Math.ceil(this.workWait() / 60000)} min`, false) : btn('work', '+45g', s.gold < 150)}</div>`;
   },
+  WORK_REST: 5 * 60 * 1000, // real time (ms) before you can work the docks again
+  workWait() { return Math.min(this.WORK_REST, Math.max(0, (Campaign.s.workAt || 0) + this.WORK_REST - Date.now())); }, // capped, should the clock be set back
   // returns an error string, '' when handled, or null when the action isn't ours
   portAct(a, i) {
     const s = Campaign.s;
@@ -194,7 +197,7 @@ const Quests = {
       return '';
     }
     if (a === 'ransom') { s.gold += s.prisoners.men * 10 + s.prisoners.value; s.prisoners = { men: 0, officers: 0, value: 0 }; Sfx.coin(); return ''; }
-    if (a === 'work') { s.gold += 45; s.day += 3; Sfx.coin(); return ''; }
+    if (a === 'work') { if (this.workWait() > 0) return 'Your back still aches from the last shift.'; s.gold += 45; s.day += 3; s.workAt = Date.now(); Sfx.coin(); return ''; }
     return null;
   },
   logHtml() {

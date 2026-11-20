@@ -13,8 +13,9 @@ const KEYS_HTML = `<div class="keys">
   <b>Tab</b><span>Take command of the next ship in your fleet (multiplayer: watch another ship after yours is out)</span>
   <b>F</b><span>Fleet orders — in battle: engage at will · form on me; at sea: send ships to a port or recall them</span>
   <b>Enter</b><span>Dock when near a port</span>
-  <b>C</b><span>Chart of the known world: coasts and ports, no ships (at sea; drag or WASD to pan, wheel or +/− to zoom)</span>
+  <b>C</b><span>Chart of the known world: coasts, terrain and ports, no ships (at sea or in port; drag or WASD to pan, wheel or +/− to zoom, hover a port for what it makes and wants)</span>
   <b>L</b><span>Captain's log: save, load and rename voyages (at sea)</span>
+  <b>Esc</b><span>Ship's menu at sea: dock, chart, fleet orders, log and saves, help, exit to title</span>
   <b>P · M · H</b><span>Pause · mute · this help</span></div>
   <p class="hint">Mind the wind: a ship flies on a broad reach, crawls close-hauled, and stalls pointing into it. Your guns only bear abeam — turn to bring a broadside on target.</p>
   <p class="hint">Ships that strike each other at speed both take damage — the heavier ship less. A ram on your bow multiplies the blow and spares your own planking. Flame cannon set ships afire; a full crew beats the flames out faster.</p>`;
@@ -46,6 +47,7 @@ const Game = {
       if (this.mode === 'map' && !ChartView.open && Input.was('l')) this.logBook();
       if (this.mode === 'map' && !ChartView.open && Input.was('f')) this.fleetOrders();
       if (this.mode === 'map' && !ChartView.open && Input.was('c')) { ChartView.show(this.map); Input.endFrame(); }
+      if (this.mode === 'map' && !ChartView.open && Input.was('Escape')) this.seaMenu();
     }
     if (!UI.open && this.mode === 'mp' && Net.phase === 'battle' && Input.was('h')) this.help();
     if (!UI.open && !this.paused) {
@@ -200,6 +202,28 @@ const Game = {
       });
     setTimeout(() => { const el = document.getElementById('mpname'); if (el) { el.focus(); el.select(); } }, 30);
   },
+  seaMenu() { // Esc at sea: everything you can do from the deck, in one place
+    const s = Campaign.s, port = this.map.nearPort, b = (a, k, label, ok = true, cls = '') =>
+      `<button ${cls ? `class="${cls}" ` : ''}data-a="${a}" data-k="${k}" ${ok ? '' : 'disabled'} style="display:block;width:100%;margin:6px 0">${label} <small>(${k === 'Escape' ? 'Esc' : k.toUpperCase()})</small></button>`;
+    UI.show(`<h1>⚓ ${esc(s.ship.name)}</h1>
+      <div style="max-width:360px;margin:0 auto">
+      ${b('dock', 'Enter', port ? `Dock at ${port.name}` : 'Dock — no port close enough', !!port, port ? 'primary' : '')}
+      ${b('chart', 'c', '🗺 Chart of the known world')}
+      ${b('fleet', 'f', s.fleet.length ? '⚑ Fleet orders' : '⚑ Fleet orders — you have no fleet', s.fleet.length > 0)}
+      ${b('log', 'l', "📖 Captain's log — save, load, rename")}
+      ${b('help', 'h', '❓ Help — keys and orders')}
+      ${b('quit', 'q', 'Save &amp; exit to title')}
+      ${b('close', 'Escape', 'Back to sea', true, port ? '' : 'primary')}</div>`, a => {
+      if (a === 'close') return UI.hide();
+      if (a === 'dock') return port ? this.dock(port) : UI.hide();
+      if (a === 'chart') { UI.hide(); return ChartView.show(this.map); }
+      if (a === 'fleet') { UI.hide(); return this.fleetOrders(); }
+      if (a === 'log') return this.logBook();
+      if (a === 'help') return this.help();
+      if (a === 'quit') return this.confirm(`Save "${esc(Campaign.name)}" and return to the title screen?`, 'Save &amp; exit',
+        () => { Campaign.saveManual(); this.map = null; this.title(); }, () => this.seaMenu());
+    });
+  },
   help() {
     UI.show(`<h1>Captain's orders</h1>${KEYS_HTML}<div class="row"><button class="primary" data-a="ok">Aye</button></div>`, () => UI.hide());
   },
@@ -304,12 +328,13 @@ const Game = {
         <div class="tabs">${tabBar}</div>
         <p class="hint">${here[3]}</p>
         <div class="cols district">${here[4]}</div>
-        <div class="row"><button class="primary" data-a="leave">Set sail</button> <span class="hint">1–6 switch district</span></div>`, act);
+        <div class="row"><button class="primary" data-a="leave">Set sail</button> <button data-a="chart" data-k="c">🗺 Chart</button> <span class="hint">1–6 switch district · C chart</span></div>`, act);
     };
     let sure = false; // the captain has already confirmed a downgrade
     let tab = this.portTab || 'docks'; // the district you were last in
     const act = a => {
       if (a.startsWith('tab_')) { tab = this.portTab = a.slice(4); return render(); }
+      if (a === 'chart') { UI.hide(); ChartView.show(this.map, port, render); return; } // the world stays still; closing the chart comes back here
       const c = SHIP_CLASSES[s.ship.cls], maxH = Campaign.maxHull();
       if (a.startsWith('buy_') && !sure && this.downgradeHtml(a.slice(4)))
         return this.confirm(this.downgradeHtml(a.slice(4)), 'Trade down', () => { sure = true; act(a); sure = false; }, render);
