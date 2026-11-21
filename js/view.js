@@ -148,12 +148,13 @@ class BattleView {
   hud(ctx, W, H, src, c, banner) {
     const me = this.me, live = me && me.state === 'active';
     const p = live ? me : c;
-    hudPanel(ctx, 12, H - 124, 250, 112);
-    hudText(ctx, `${p.name} — ${p.c.name}`, 24, H - 107, 14, '#f5e9c8', 'left', true);
-    hudBar(ctx, 24, H - 94, 226, 16, p.hull / p.maxHull, '#a8322a', `Hull ${Math.ceil(p.hull)}/${p.maxHull}`);
-    hudBar(ctx, 24, H - 74, 226, 16, p.sailHp / 100, '#8a8a6a', `Sails ${Math.round(p.sailHp)}%`);
-    hudBar(ctx, 24, H - 54, 226, 16, p.crew / p.maxCrew, '#3f6f9f', `Crew ${p.crew}/${p.maxCrew}`);
-    hudText(ctx, `Canvas: ${['Furled', 'Half sail', 'Full sail'][Math.round(p.sail * 2)]}   ${(p.speed / 10).toFixed(1)} kn`, 24, H - 25, 13);
+    const sy = TouchUI.on ? 158 : H; // on a touch screen the ship's state moves to the top left, out from under your thumbs
+    hudPanel(ctx, 12, sy - 124, 250, 112);
+    hudText(ctx, `${p.name} — ${p.c.name}`, 24, sy - 107, 14, '#f5e9c8', 'left', true);
+    hudBar(ctx, 24, sy - 94, 226, 16, p.hull / p.maxHull, '#a8322a', `Hull ${Math.ceil(p.hull)}/${p.maxHull}`);
+    hudBar(ctx, 24, sy - 74, 226, 16, p.sailHp / 100, '#8a8a6a', `Sails ${Math.round(p.sailHp)}%`);
+    hudBar(ctx, 24, sy - 54, 226, 16, p.crew / p.maxCrew, '#3f6f9f', `Crew ${p.crew}/${p.maxCrew}`);
+    hudText(ctx, `Canvas: ${['Furled', 'Half sail', 'Full sail'][Math.round(p.sail * 2)]}   ${(p.speed / 10).toFixed(1)} kn`, 24, sy - 25, 13);
     if (live && !me.grapple) {
       const gx = W / 2 - 200, gy = H - 82, rt = me.reloadTime('L'), G = GUNS[me.gun];
       hudPanel(ctx, gx, gy, 400, 70);
@@ -199,13 +200,14 @@ class BattleView {
     }
     const left = src.ships.filter(s => s.team !== team && s.state === 'active').length;
     hudText(ctx, `Enemy ships fighting: ${left}`, 16, 22, 15, '#f5e9c8', 'left', true);
-    hudText(ctx, live ? `A/D steer · W/S sails · Q/E broadsides${me.bow ? ' · R bow chaser' : ''} · Space fire at nearest · 1-3 shot · B board${me.ram ? ' · ram them bow-on' : ''} · H help`
+    if (TouchUI.on) { if (!live) hudText(ctx, `Spectating ${c.name} — ⇆ to watch another ship`, W / 2, 96, 14, 'rgba(245,233,200,.85)', 'center'); }
+    else hudText(ctx, live ? `A/D steer · W/S sails · Q/E broadsides${me.bow ? ' · R bow chaser' : ''} · Space fire at nearest · 1-3 shot · B board${me.ram ? ' · ram them bow-on' : ''} · H help`
       : `Spectating ${c.name} — Tab to watch another ship`, 16, 44, 12, 'rgba(245,233,200,.75)');
-    if (live && this.fleetHint) hudText(ctx, this.fleetHint, 16, 62, 12, '#ffd24a');
+    if (live && this.fleetHint && !TouchUI.on) hudText(ctx, this.fleetHint, 16, 62, 12, '#ffd24a');
     drawMessages(ctx, this.msgs, W);
     if (live && !banner) {
       const bt = !me.grapple && src.ships.find(e => e.team !== me.team && e.state === 'active' && !e.grapple && canBoard(me, e));
-      if (bt) hudText(ctx, `Press B to board the ${bt.name}`, W / 2, H - 110, 20, '#ffd24a', 'center', true);
+      if (bt) hudText(ctx, `${TouchUI.on ? 'Tap ⚓ board' : 'Press B'} to board the ${bt.name}`, W / 2, H - 110, 20, '#ffd24a', 'center', true);
       if (Math.hypot(me.x, me.y) > src.R - 260) hudText(ctx, 'Cross the line to flee the battle', W / 2, H / 2 - 90, 18, '#ffb0a0', 'center', true);
       if (me.burn > 0) hudText(ctx, '🔥 Fire aboard! Your crew are fighting it', W / 2, H / 2 + 116, 17, '#ffb070', 'center', true);
       if (windFactor(me.heading, src.wind.dir) < .3 && me.sail > 0) hudText(ctx, 'In irons — turn away from the wind!', W / 2, H / 2 + 90, 16, '#ffe9a0', 'center');

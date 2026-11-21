@@ -32,7 +32,8 @@ for (const f of fs.readdirSync(path.join(ROOT, 'js'))) if (f.endsWith('.js')) FI
 
 const server = http.createServer((req, res) => {
   const url = (req.url || '/').split('?')[0];
-  const file = FILES.get(url);
+  let file = FILES.get(url);
+  if (!file && /^\/js\/[A-Za-z0-9_-]+\.js$/.test(url) && fs.existsSync(path.join(ROOT, url))) FILES.set(url, file = url.slice(1)); // a script added since the server started (still only js/*.js)
   if (req.method !== 'GET' || !file) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
   fs.readFile(path.join(ROOT, file), (err, data) => {
     if (err) { res.writeHead(500); res.end(); return; }

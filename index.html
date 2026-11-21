@@ -3,12 +3,23 @@
 <head>
 <meta charset="utf-8">
 <title>Corsairs of the Shattered Sea</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="overlay" class="hidden"><div id="panel"></div></div>
+<div id="boot">Charting the Shattered Sea…</div>
+<script>
+// Shown until the title screen opens; any error while starting up is printed here instead of leaving a blank page.
+window.onerror = function (msg, src, line, col, err) {
+  var b = document.getElementById('boot'); if (!b) return;
+  b.className = 'err';
+  b.textContent = 'The game failed to start: ' + msg + (src ? ' (' + String(src).split('/').pop() + ':' + line + ':' + col + ')' : '') + (err && err.stack ? '\n\n' + err.stack : '');
+};
+</script>
 <script src="js/core.js"></script>
 <script src="js/ship.js"></script>
 <script src="js/battle.js"></script>
@@ -17,6 +28,8 @@
 <script src="js/lands.js"></script>
 <script src="js/world.js"></script>
 <script src="js/quests.js"></script>
+<script src="js/news.js"></script>
+<script src="js/touch.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

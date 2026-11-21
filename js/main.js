@@ -20,22 +20,39 @@ const KEYS_HTML = `<div class="keys">
   <p class="hint">Mind the wind: a ship flies on a broad reach, crawls close-hauled, and stalls pointing into it. Your guns only bear abeam — turn to bring a broadside on target.</p>
   <p class="hint">Ships that strike each other at speed both take damage — the heavier ship less. A ram on your bow multiplies the blow and spares your own planking. Flame cannon set ships afire; a full crew beats the flames out faster.</p>`;
 
+const TOUCH_HTML = `<h3 style="text-align:center">On a touch screen</h3><div class="keys">
+  <b>◀ ▶</b><span>Hold to steer to port / starboard</span>
+  <b>▲ ▼ sail</b><span>Raise / lower sail</span>
+  <b>port · fire · stbd</b><span>Fire the port broadside, whichever side faces the nearest enemy, or the starboard broadside</span>
+  <b>chaser · board</b><span>Fire the bow chaser · grapple and board an enemy alongside</span>
+  <b>1 2 3</b><span>Choose your shot, or your stance while boarding</span>
+  <b>☰ · 🗺</b><span>Ship's menu (dock, chart, fleet, log and saves) · the chart (drag to pan, pinch to zoom, tap a port for its trade)</span>
+  <b>⚓ Dock</b><span>Appears when you are close to a port</span>
+  <b>⏸ ? ⇆ ⚑ 🔊 ⛶</b><span>Pause · help · command another ship · fleet orders · sound · full screen</span></div>
+  <p class="hint">Turn your phone sideways for the best view. The keyboard keys below work too.</p>`;
+
 const Game = {
-  mode: 'title', battle: null, map: null, W: 0, H: 0, zoom: 1, dpr: 1, paused: false, t: 0,
+  mode: 'title', battle: null, map: null, W: 0, H: 0, zoom: 1, dpr: 1, uiS: 1, paused: false, t: 0,
 
   init() {
     this.cv = document.getElementById('c'); this.ctx = this.cv.getContext('2d');
-    const resize = () => {
-      this.dpr = Math.min(2, window.devicePixelRatio || 1);
-      this.W = innerWidth; this.H = innerHeight;
-      this.cv.width = this.W * this.dpr; this.cv.height = this.H * this.dpr;
-      this.zoom = clamp(Math.min(this.W, this.H) / 780, .55, 1.5);
-    };
-    addEventListener('resize', resize); resize();
+    addEventListener('resize', () => this.resize());
+    TouchUI.init(); this.resize();
     Input.init(); UI.init(); this.title();
+    const boot = document.getElementById('boot'); if (boot && boot.className !== 'err') boot.remove(); // the loading note (an error stays on screen)
     let last = performance.now();
     const loop = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; this.frame(dt); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
+  },
+
+  // W and H are in game pixels. On a small touch screen the game draws at a smaller scale (uiS) so the HUD fits.
+  resize() {
+    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = innerWidth, h = innerHeight;
+    this.uiS = TouchUI.on ? clamp(Math.min(w, h) / 480, .62, 1) : 1;
+    this.W = w / this.uiS; this.H = h / this.uiS;
+    this.cv.width = Math.round(w * this.dpr); this.cv.height = Math.round(h * this.dpr);
+    this.zoom = clamp(Math.min(this.W, this.H) / 780, .55, 1.5);
   },
 
   frame(dt) {
@@ -56,13 +73,14 @@ const Game = {
     }
     if (this.mode === 'mp') Net.update(dt); // the server never pauses
     const ctx = this.ctx, W = this.W, H = this.H;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    const k = this.dpr * this.uiS; ctx.setTransform(k, 0, 0, k, 0, 0);
     if (this.mode === 'battle' && this.battle) this.battle.view.draw(ctx, W, H, this.battle.sim, this.battleBanner());
     else if (this.mode === 'map' && this.map) ChartView.open ? ChartView.draw(ctx, W, H, this.map) : this.map.draw(ctx, W, H);
     else if (this.mode === 'mp') Net.draw(ctx, W, H);
     else drawWater(ctx, this.t * 30, this.t * 12, 1, W, H, this.t);
     if (this.paused) hudText(ctx, 'PAUSED — press P', W / 2, H / 2, 40, '#fff3c4', 'center', true);
     if (Sfx.muted) hudText(ctx, 'muted', W - 16, H - 12, 12, '#fff', 'right');
+    TouchUI.update();
     Input.endFrame();
   },
 
@@ -72,13 +90,14 @@ const Game = {
     UI.show(`<h1>⚓ Corsairs of the Shattered Sea ⚓</h1>
       <h2>A tale of black powder, grey canvas and gold</h2>
       <p>You command a leaky cog and two dozen rogues. Prowl the sea lanes, plunder fat merchants, outfight rival pirates, and spend your spoils in port on guns, crew and bigger ships — until your legend is dark enough to draw out <b>Admiral Mordrake</b> himself.</p>
-      ${KEYS_HTML}
-      <div class="row"><button class="primary" data-a="new">New voyage</button>
-      <button data-a="cont" ${Campaign.hasSave() ? '' : 'disabled'}>Continue voyage</button>
-      <button data-a="load" ${Campaign.hasSave() ? '' : 'disabled'}>Load voyage</button>
-      <button data-a="mp" ${Net.available() ? '' : 'disabled'}>⚔ Multiplayer battle</button></div>
+      <div class="menu"><button class="primary" data-a="new" data-k="n">New voyage</button>
+      <button data-a="cont" data-k="c" ${Campaign.hasSave() ? '' : 'disabled'}>Continue voyage</button>
+      <button data-a="load" data-k="l" ${Campaign.hasSave() ? '' : 'disabled'}>Load voyage</button>
+      <button data-a="mp" ${Net.available() ? '' : 'disabled'}>⚔ Multiplayer battle</button>
+      <button data-a="help" data-k="h">❓ Help — keys and orders</button></div>
       ${Net.available() ? '' : '<p class="hint">Multiplayer needs the game server: run <b>node server/server.js</b> and open the address it prints.</p>'}`,
       a => {
+        if (a === 'help') return this.help(() => this.title());
         if (a === 'mp') return this.mpName();
         if (a === 'new') return this.slotMenu('new');
         if (a === 'load') return this.slotMenu('load');
@@ -224,14 +243,14 @@ const Game = {
         () => { Campaign.saveManual(); this.map = null; this.title(); }, () => this.seaMenu());
     });
   },
-  help() {
-    UI.show(`<h1>Captain's orders</h1>${KEYS_HTML}<div class="row"><button class="primary" data-a="ok">Aye</button></div>`, () => UI.hide());
+  help(back = () => UI.hide()) {
+    UI.show(`<h1>Captain's orders</h1>${TouchUI.on ? TOUCH_HTML : ''}${KEYS_HTML}<div class="row"><button class="primary" data-a="ok" data-k="Escape">Aye</button></div>`, back);
   },
 
   // ---------- port ----------
   dock(port) {
     const s = Campaign.s, pi = PORTS.indexOf(port);
-    const news = Quests.onDock(port); let err = '';
+    News.tick(s); const news = Quests.onDock(port); let err = '';
     for (const f of wingFleet(s)) { const l = sellCargo(f, port); if (l) news.push(esc(l)); } // what a recalled trade ship still had aboard
     const purses = wingFleet(s).reduce((a, f) => a + takePurse(s, f), 0); if (purses) news.push(`Your fleet's pursers bring <b>${purses}</b> gold across to your strongroom.`);
     const cons = collectConsign(s, pi); if (cons) news.push(cons);
@@ -247,7 +266,8 @@ const Game = {
       const market = Object.keys(GOODS).filter(g => !GOODS[g].hidden && (g !== 'plunder' || s.hold[g])).map(g => {
         const sell = goodPrice(port, g), next = goodPrice(port, g, s.day + 1), buy = buyPrice(port, g), held = s.hold[g] || 0;
         const owed = Math.min(held, Quests.reserved(g)), have = held - owed; // contract cargo isn't yours to sell
-        const tag = g === 'plunder' ? 'old booty: sell it off' : port.makes.includes(g) ? 'made here' : port.wants.includes(g) ? '<b>wanted here</b>' : '';
+        const why = News.why(pi, g).map(w => `<span title="${esc(w.name)}">${w.icon}${w.up ? '▲' : '▼'}</span>`).join(''); // news moving the price (see the tavern)
+        const tag = (g === 'plunder' ? 'old booty: sell it off' : port.makes.includes(g) ? 'made here' : port.wants.includes(g) ? '<b>wanted here</b>' : '') + (why ? ` ${why}` : '');
         const trend = next > sell ? '▲' : next < sell ? '▼' : '';
         const wanted = g === 'plunder' ? '' : ` title="Wanted in ${PORTS.filter(p => p.wants.includes(g)).map(p => p.name).join(', ')}"`;
         const canBuy = g !== 'plunder' && room > 0 && s.gold >= buy;
@@ -305,7 +325,8 @@ const Game = {
           `<section style="grid-column:1/-1"><h3>Taproom</h3>
             <div class="item"><span>Hire hands (${HAND_COST}g a head) — aboard <b>${s.ship.crew}/${c.crew}</b></span><span>${btn('crew5', '+5', need > 0 && s.gold >= HAND_COST)}${btn('crewfill', 'Fill', need > 0 && s.gold >= HAND_COST)}</span></div>
             ${Quests.tavernHtml(btn)}</section>
-          ${Quests.boardHtml(pi, btn)}`],
+          ${Quests.boardHtml(pi, btn)}
+          <section style="grid-column:1/-1"><h3>News from the waterfront ${sub('(wars, famines, strikes and crazes: while they last, prices swing hard wherever they reach)')}</h3>${News.tavernHtml(pi)}</section>`],
         ['wright', '🔨 Shipwright', repair > 0 ? '!' : '', 'The smell of tar and fresh oak. The master shipwright looks your hull over with a critical eye.',
           `<section><h3>Repairs</h3>
             <div class="item"><span>Mend hull and sails — hull <b>${Math.ceil(s.ship.hull)}/${maxH}</b>, sails <b>${Math.round(s.ship.sailHp)}%</b></span>${btn('repair', repair > 0 ? `Repair ${Math.min(repair, s.gold)}g` : 'Shipshape', repair > 0 && s.gold > 0)}</div>

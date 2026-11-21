@@ -26,17 +26,19 @@ const MAP_SHIFT = { 2: [75 * GEO.kx, 12 * GEO.ky], 3: [0, 0], 4: [0, 0], 5: [0, 
 // Version 7 Asunción with the Paraná (Los Angeles moved up); Iquitos became Manaus in place, with the Amazon shortened.
 // Version 8 San Fernando with the Orinoco (Vancouver moved up); Callao and Valparaíso became Lima and Viña del Mar in place,
 // and Elmina Lagos. Version 9 The Dalles and Benares with the Columbia and the Ganges (Honolulu and Dakar moved up),
-// version 10 Multan with the Indus (Copenhagen moved up again).
-const PORT_VER = 10;
+// version 10 Multan with the Indus (Copenhagen moved up again), version 11 Amsterdam, whose sea lane all but touched London's
+// (Taipei moved up into its place; Amsterdam's holdings and ships go to London).
+const PORT_VER = 11;
 const PORT_MOVES = { 2: { 57: 'Brisbane', 60: 'Melbourne', 63: 'Melbourne', 65: 'Auckland', 79: 'Odesa', 80: 'Mariupol' },
-  3: { 48: 'London', 49: 'Amsterdam', 77: 'Istanbul', 78: 'Sevastopol' },
-  4: { 50: 'Amsterdam', 76: 'Dubai' },
+  3: { 48: 'London', 49: 'London', 77: 'Istanbul', 78: 'Sevastopol' }, // (49 and 50 went to Amsterdam, now gone too)
+  4: { 50: 'London', 76: 'Dubai' },
   5: { 51: 'Alexandria', 70: 'Alexandria', 77: 'Copenhagen', 78: 'St Petersburg' },
   6: { 52: 'Lagos', 53: 'Lagos', 54: 'Zanzibar', 74: 'San Francisco', 75: 'Puerto Vallarta', 76: 'Le Havre' },
   7: { 47: 'Buenos Aires', 73: 'Los Angeles' },
   8: { 45: 'Cartagena', 72: 'Vancouver' },
   9: { 44: 'Vancouver', 56: 'Calcutta', 71: 'Honolulu', 72: 'Dakar' },
-  10: { 55: 'Bombay', 70: 'Copenhagen' } };
+  10: { 55: 'Bombay', 70: 'Copenhagen' },
+  11: { 2: 'London', 74: 'Taipei' } };
 const seaFill = n => Math.round(n * NAV.water / 56e6); // NPC numbers were tuned for about 28M px² of open sea; halved since
 // ---------- coastlines ----------
 // Each outline is projected and roughened: every edge is split again and again with its midpoint nudged
@@ -256,13 +258,13 @@ for (let y = 23; y < WORLD.H; y += 46) for (let x = 23; x < WORLD.W; x += 46) {
 const PORTS = [
   { name: 'Lisbon',         lon: -9.25, lat: 38.7,  ang: Math.PI,  price: 1.2, makes: ['wine', 'fish'],     wants: ['spice', 'gold'] },
   { name: 'London',         lon: 1.2,   lat: 52.4,  ang: 0,        price: 1.6, makes: ['cloth', 'iron'],    wants: ['tea', 'tobacco', 'furs'] },
-  { name: 'Amsterdam',      lon: 4.7,   lat: 52.4,  ang: Math.PI,  price: 1.5, makes: ['cloth', 'fish'],    wants: ['spice', 'coffee', 'silk'] },
+  { name: 'Taipei',         lon: 121.6, lat: 25.15, ang: -1.57,    price: 1.2, makes: ['tea', 'sugar'],     wants: ['iron', 'wine'] }, // in Amsterdam's old place
   { name: 'Cadiz',          lon: -6.4,  lat: 36.9,  ang: 2.2,      price: 1.3, makes: ['wine', 'wool'],     wants: ['silver', 'sugar'] },
   { name: 'Bergen',         lon: 5,     lat: 60.4,  ang: Math.PI,  price: 0.9, makes: ['fish', 'timber'],   wants: ['grain', 'wine'] },
-  { name: 'Marseille',      lon: 5.37,  lat: 43.3,  ang: 1.57,     price: 1.4, makes: ['wine', 'cloth'],    wants: ['grain', 'wool', 'fish'] }, // in Genoa's old place
+  { name: 'Marseille',      lon: 5.37,  lat: 43.3,  ang: 1.57,     price: 1.4, makes: ['wine', 'cloth'],    wants: ['silk', 'sugar', 'fish'] }, // in Genoa's old place
   { name: 'Smyrna',         lon: 27.1,  lat: 38.4,  ang: Math.PI,  price: 1.5, makes: ['silk', 'coffee'],   wants: ['iron', 'silver', 'ivory'] },
-  { name: 'Alexandria',     lon: 30,    lat: 31.2,  ang: -1.57,    price: 1.1, makes: ['grain', 'spice'],   wants: ['timber', 'iron'] },
-  { name: 'Algiers',        lon: 3.1,   lat: 36.2,  ang: -1.57,    price: 1.9, makes: ['wool', 'grain'],    wants: ['iron', 'wine'] },
+  { name: 'Alexandria',     lon: 30,    lat: 31.2,  ang: -1.57,    price: 1.1, makes: ['grain', 'spice'],   wants: ['iron', 'cloth'] },
+  { name: 'Algiers',        lon: 3.1,   lat: 36.2,  ang: -1.57,    price: 1.9, makes: ['wool', 'grain'],    wants: ['iron', 'timber'] },
   { name: 'Lagos',          lon: 3.4,   lat: 6.4,   ang: 1.57,     price: 0.8, makes: ['gold', 'ivory'],    wants: ['cloth', 'iron'] }, // in Elmina's old place
   { name: 'Cape Town',      lon: 18.3,  lat: -33.9, ang: Math.PI,  price: 1.0, makes: ['grain', 'wine'],    wants: ['timber', 'cloth'] },
   { name: 'Zanzibar',       lon: 39.4,  lat: -6.2,  ang: 0,        price: 0.9, makes: ['ivory', 'spice'],   wants: ['cloth', 'iron'] },
@@ -290,7 +292,7 @@ const PORTS = [
   { name: 'Ambon',          lon: 128.2, lat: -3.4,  ang: 1.57,     price: 0.8, makes: ['spice'],            wants: ['cloth', 'grain', 'iron'] },
   { name: 'Manila',         lon: 120.5, lat: 14.6,  ang: Math.PI,  price: 1.4, makes: ['silk', 'sugar'],    wants: ['silver'] },
   { name: 'Macau',          lon: 113.5, lat: 22.1,  ang: 1.57,     price: 1.5, makes: ['tea', 'silk'],      wants: ['silver', 'furs'] },
-  { name: 'Nagasaki',       lon: 129.75, lat: 32.75, ang: Math.PI, price: 1.6, makes: ['silver'],           wants: ['silk', 'cloth'] },
+  { name: 'Nagasaki',       lon: 129.75, lat: 32.75, ang: Math.PI, price: 1.6, makes: ['silver'],           wants: ['sugar', 'spice'] },
   // up the St Lawrence and on the Great Lakes (near: they lie on a channel, so ships leave from the middle of it)
   { name: 'Montreal',       lon: -73.6, lat: 45.5,  ang: 1.05,     price: 1.0, makes: ['furs', 'timber'],   wants: ['cloth', 'wine', 'iron'], near: 30 },
   { name: 'Chicago',        lon: -88.2, lat: 40.6, ang: -1.57,     price: 1.0, makes: ['grain', 'furs'],    wants: ['cloth', 'iron', 'tobacco'], near: 30 },
@@ -298,9 +300,9 @@ const PORTS = [
   { name: 'Kuwait',         lon: 47.95, lat: 29.35, ang: 0.6,      price: 1.3, makes: ['wool', 'coffee'],   wants: ['timber', 'grain', 'iron'] },
   { name: 'Thunder Bay',    lon: -89.25, lat: 52.3, ang: 1.57,     price: 1.1, makes: ['furs', 'fish'],     wants: ['grain', 'iron', 'cloth'], near: 30 },
   // Cathay, Korea and Japan (Beijing up the Bohai and the Hai River)
-  { name: 'Beijing',        lon: 116.4, lat: 39.9,  ang: 0.62,     price: 1.7, makes: ['silk', 'tea'],      wants: ['silver', 'furs'], near: 30 },
-  { name: 'Shanghai',       lon: 121.5, lat: 31.2,  ang: 0,        price: 1.4, makes: ['silk', 'cloth'],    wants: ['silver', 'spice'] },
-  { name: 'Seoul',          lon: 126.9, lat: 37.5,  ang: Math.PI,  price: 1.2, makes: ['grain', 'iron'],    wants: ['silver', 'spice'] },
+  { name: 'Beijing',        lon: 116.4, lat: 39.9,  ang: 0.62,     price: 1.7, makes: ['silk', 'tea'],      wants: ['furs', 'wool'], near: 30 },
+  { name: 'Shanghai',       lon: 121.5, lat: 31.2,  ang: 0,        price: 1.4, makes: ['silk', 'cloth'],    wants: ['spice', 'furs'] },
+  { name: 'Seoul',          lon: 126.9, lat: 37.5,  ang: Math.PI,  price: 1.2, makes: ['grain', 'iron'],    wants: ['spice', 'furs'] },
   { name: 'Tokyo',          lon: 139.7, lat: 35.6,  ang: 1.57,     price: 1.6, makes: ['silk', 'timber'],   wants: ['sugar', 'spice'] },
   // at the head of the great rivers
   { name: 'St. Louis',      lon: -90.2, lat: 38.6,  ang: 1.16,     price: 1.0, makes: ['furs', 'grain'],    wants: ['cloth', 'iron'], near: 30 },
@@ -308,25 +310,25 @@ const PORTS = [
   { name: 'Vancouver',      lon: -121.9, lat: 49.3, ang: Math.PI,  price: 1.0, makes: ['timber', 'furs'],   wants: ['cloth', 'iron'], near: 30 }, // in San Fernando's old place
   { name: 'Manaus',         lon: -60,   lat: -3.1,  ang: 0.08,     price: 0.9, makes: ['timber', 'spice'],  wants: ['iron', 'cloth'], near: 30 }, // in Iquitos' old place
   { name: 'Los Angeles',    lon: -118.25, lat: 33.8, ang: 2.2,     price: 1.0, makes: ['wine', 'wool'],     wants: ['cloth', 'iron'] }, // in Asunción's old place
-  { name: 'Istanbul',       lon: 28.6,  lat: 41.65, ang: 1.9,      price: 1.7, makes: ['silk', 'coffee'],   wants: ['grain', 'furs', 'iron'], near: 30 }, // in Orléans' old place
-  { name: 'Sevastopol',     lon: 33.52, lat: 44.6,  ang: Math.PI,  price: 1.0, makes: ['fish', 'wine'],     wants: ['iron', 'timber'] }, // in Strasbourg's old place
+  { name: 'Istanbul',       lon: 28.6,  lat: 41.65, ang: 1.9,      price: 1.7, makes: ['silk', 'coffee'],   wants: ['furs', 'iron', 'sugar'], near: 30 }, // in Orléans' old place
+  { name: 'Sevastopol',     lon: 33.52, lat: 44.6,  ang: Math.PI,  price: 1.0, makes: ['fish', 'wine'],     wants: ['timber', 'sugar'] }, // in Strasbourg's old place
   { name: 'Dubai',          lon: 55.3,  lat: 25.27, ang: -2.36,    price: 1.2, makes: ['cloth', 'spice'],   wants: ['timber', 'grain'] }, // in Magdeburg's old place
   { name: 'St Petersburg',  lon: 30.3,  lat: 59.93, ang: Math.PI,  price: 1.2, makes: ['timber', 'furs'],   wants: ['wine', 'sugar', 'cloth'], near: 30 }, // in Aswan's old place
   { name: 'Le Havre',       lon: 0.3,   lat: 48.4,  ang: -1.75,    price: 1.4, makes: ['cloth', 'wine'],    wants: ['sugar', 'coffee', 'tobacco'] }, // in Bussa's old place
   { name: 'Puerto Vallarta', lon: -105.3, lat: 20.65, ang: Math.PI, price: 1.0, makes: ['silver', 'tobacco'], wants: ['cloth', 'wine'] }, // in Mbandaka's old place
-  { name: 'San Francisco',  lon: -122.4, lat: 37.8, ang: Math.PI,  price: 1.3, makes: ['gold', 'grain'],    wants: ['cloth', 'iron', 'wine'] }, // in Tete's old place
+  { name: 'San Francisco',  lon: -122.4, lat: 37.8, ang: Math.PI,  price: 1.3, makes: ['gold', 'grain'],    wants: ['cloth', 'iron', 'tea'] }, // in Tete's old place
   { name: 'Copenhagen',     lon: 12.55, lat: 55.68, ang: 0,        price: 1.3, makes: ['fish', 'grain'],    wants: ['wine', 'spice', 'tobacco'], near: 30 }, // in Multan's old place
   { name: 'Dakar',          lon: -17.45, lat: 14.7, ang: Math.PI,  price: 0.8, makes: ['fish', 'ivory'],    wants: ['cloth', 'iron', 'wine'] }, // on Cap-Vert, in Benares' old place
   // Australia and New Zealand, with Dublin, New Orleans, Odesa and Mariupol in the places of the ports taken off the map
-  { name: 'Dublin',         lon: -6.25, lat: 53.35, ang: 0,        price: 1.2, makes: ['wool', 'cloth'],    wants: ['tea', 'sugar', 'wine'] }, // in Sydney's old place
+  { name: 'Dublin',         lon: -6.25, lat: 53.35, ang: 0,        price: 1.2, makes: ['wool', 'cloth'],    wants: ['tea', 'sugar', 'tobacco'] }, // in Sydney's old place
   { name: 'Melbourne',      lon: 144.9, lat: -37.9, ang: 1.57,     price: 1.2, makes: ['gold', 'wool'],     wants: ['cloth', 'wine', 'iron'] },
   { name: 'Brisbane',       lon: 153,   lat: -27.5, ang: 0,        price: 1.0, makes: ['sugar', 'timber'],  wants: ['cloth', 'iron'] },
   { name: 'New Orleans',    lon: -90.1, lat: 29.95, ang: 2.22,     price: 1.3, makes: ['sugar', 'tobacco'], wants: ['cloth', 'iron', 'wine'], near: 30 }, // up the Mississippi, in Adelaide's old place
   { name: 'Perth',          lon: 115.8, lat: -32,   ang: Math.PI,  price: 1.0, makes: ['wool', 'timber'],   wants: ['cloth', 'iron'] },
   { name: 'Darwin',         lon: 130.85, lat: -12.45, ang: -1.57,  price: 0.9, makes: ['fish', 'gold'],     wants: ['grain', 'cloth'] },
-  { name: 'Odesa',          lon: 30.73, lat: 46.48, ang: 0.8,      price: 1.0, makes: ['grain', 'wool'],    wants: ['wine', 'cloth', 'sugar'] }, // moved up from the Black Sea ports into Hobart's old place
+  { name: 'Odesa',          lon: 30.73, lat: 46.48, ang: 0.8,      price: 1.0, makes: ['grain', 'wool'],    wants: ['cloth', 'sugar', 'spice'] }, // moved up from the Black Sea ports into Hobart's old place
   { name: 'Auckland',       lon: 174.75, lat: -36.85, ang: -0.8,   price: 1.0, makes: ['timber', 'wool'],   wants: ['iron', 'cloth'] },
-  { name: 'Mariupol',       lon: 37.55, lat: 47.1,  ang: 1.57,     price: 0.9, makes: ['iron', 'grain'],    wants: ['cloth', 'wine'], near: 30 }, // and Wellington's
+  { name: 'Mariupol',       lon: 37.55, lat: 47.1,  ang: 1.57,     price: 0.9, makes: ['iron', 'grain'],    wants: ['cloth', 'sugar'], near: 30 }, // and Wellington's
   { name: 'Christchurch',   lon: 172.7, lat: -43.6, ang: 0,        price: 0.9, makes: ['wool', 'grain'],    wants: ['iron', 'tea'] },
   // the Mediterranean and the Levant
   { name: 'Athens',         lon: 23.65, lat: 38.0, ang: 1.75,      price: 1.3, makes: ['wine', 'wool'],     wants: ['grain', 'iron'] },
@@ -344,7 +346,8 @@ const PORTS = [
   { name: 'Ho Chi Minh',    lon: 106.75, lat: 10.55, ang: 0.79,    price: 1.1, makes: ['grain', 'silk'],    wants: ['iron', 'cloth'] },
   { name: 'Kuching',        lon: 110.35, lat: 1.6,  ang: -1.57,    price: 1.0, makes: ['timber', 'spice'],  wants: ['cloth', 'iron'] },
   { name: 'Port Moresby',   lon: 147.15, lat: -9.45, ang: 2.36,    price: 0.9, makes: ['fish', 'timber'],   wants: ['iron', 'cloth'] },
-  { name: 'Suva',           lon: 178.2, lat: -18.1, ang: 1.57,     price: 0.9, makes: ['sugar', 'fish'],    wants: ['cloth', 'iron'] },  { name: 'Taipei',         lon: 121.6, lat: 25.15, ang: -1.57,    price: 1.2, makes: ['tea', 'sugar'],     wants: ['silver', 'iron'] },
+  { name: 'Suva',           lon: 178.2, lat: -18.1, ang: 1.57,     price: 0.9, makes: ['sugar', 'fish'],    wants: ['cloth', 'iron'] },
+  // Taipei is up in Amsterdam's old place
 ];
 for (const p of PORTS) { // find the shore along the bearing, then the first open water a little way out
   const [cx, cy] = geo(p.lon, p.lat), dx = Math.cos(p.ang), dy = Math.sin(p.ang), at = r => onLand(cx + dx * r, cy + dy * r, 4);
@@ -389,11 +392,29 @@ const GOODS = {
 };
 const TRADE_GOODS = Object.keys(GOODS).filter(k => k !== 'plunder' && !GOODS[k].hidden);
 const goodName = g => GOODS[g || 'plunder'].name;
+// Prices rise and fall by region, slowly: the sea is divided into SWING.cell px squares, each with its own slow wave
+// for every good (a period of 24–46 days). A port follows the squares around it, weighted by distance (SWING.sigma),
+// so neighbouring ports move together and a whole region's market for a good is dear or cheap for weeks at a time.
+const SWING = { cell: 2400, sigma: 1700, amp: .2 };
+function regionSwing(pi, gi, day) {
+  const p = PORTS[pi];
+  if (!p.swing) { // the squares near the port and their weights, scaled so the sum of waves keeps the amplitude of one
+    const ws = [], nx = Math.round(WORLD.W / SWING.cell), ny = Math.ceil(WORLD.H / SWING.cell);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const d = dist(p, { x: (i + .5) * SWING.cell, y: (j + .5) * SWING.cell }); // wrap-aware: the squares wrap with the map
+      if (d < SWING.sigma * 3) ws.push([j * nx + i, Math.exp(-(d * d) / (2 * SWING.sigma * SWING.sigma))]);
+    }
+    const n = Math.hypot(...ws.map(w => w[1])) || 1; p.swing = ws.map(([c, w]) => [c, w / n]);
+  }
+  let v = 0;
+  for (const [c, w] of p.swing) v += w * Math.sin(day * 6.283 / (24 + 22 * hash2(c * 7.1, gi * 3.3)) + 6.283 * hash2(gi * 5.7, c * 1.9));
+  return clamp(v, -1.3, 1.3);
+}
 function goodPrice(port, g, day = Campaign.s.day) { // what the port pays you for a crate
   if (g === 'plunder') return plunderPrice(port, day);
-  const ph = PORTS.indexOf(port) * 1.7 + TRADE_GOODS.indexOf(g) * 2.3;
-  const f = (port.makes.includes(g) ? .7 : port.wants.includes(g) ? 1.45 : 1) * (1 + .2 * Math.sin(day * .4 + ph) + .08 * Math.sin(day * 1.1 + ph * 1.3));
-  return Math.max(2, Math.round(GOODS[g].base * f * (isMerchant() ? 1.05 : 1))); // guild members get a better price
+  const pi = PORTS.indexOf(port), gi = TRADE_GOODS.indexOf(g);
+  const f = (port.makes.includes(g) ? .7 : port.wants.includes(g) ? 1.45 : 1) * (1 + SWING.amp * regionSwing(pi, gi, day) + .03 * Math.sin(day * .7 + pi * 1.7 + gi * 2.3));
+  return Math.max(2, Math.round(GOODS[g].base * f * News.mul(PORTS.indexOf(port), g, day) * (isMerchant() ? 1.05 : 1))); // the news moves prices (news.js); guild members get a better price
 }
 const buyPrice = (port, g, day) => Math.ceil(goodPrice(port, g, day) * (isMerchant() ? 1.04 : 1.12)); // the merchants' cut, smaller for guild members
 const holdUsed = s => Object.values(s.hold).reduce((a, n) => a + n, 0);
@@ -557,7 +578,7 @@ function addStanding(s, n) { // merchants only; fractions carry over
 // ---------- your fleet: ships bought at a shipyard that sail and fight beside your flagship ----------
 // s.fleet = [{ cls, name, hull, sailHp, crew, ammo: { chain, grape } }]. They are bought at full price, and only
 // in a SHIPYARD_PORTS yard, but any port will mend, man and arm them (at a price).
-const SHIPYARD_PORTS = ['Amsterdam', 'Havana', 'Bombay', 'Jakarta'];
+const SHIPYARD_PORTS = ['London', 'Havana', 'Bombay', 'Jakarta'];
 const FLEET_MAX = 3, FLEET_MIN_CREW = .25, HAND_COST = 6, SHOT_COST = 30, SHOT_MAX = 20;
 const isShipyard = port => SHIPYARD_PORTS.includes(port.name);
 const fleetMinCrew = f => Math.ceil(SHIP_CLASSES[f.cls].crew * FLEET_MIN_CREW);
@@ -849,7 +870,7 @@ const Campaign = {
     });
     s.consign = rekey(s.consign, (a, b) => ({ gold: a.gold + b.gold, goods: addGoods(a.goods, b.goods) }));
     s.banned = rekey(s.banned, Math.max);
-    s.offers = {}; s.hires = {}; // notice boards and ships for hire are drawn up afresh
+    s.offers = {}; s.hires = {}; delete s.events; // notice boards, ships for hire and the news are drawn up afresh
     for (const z of s.seize || []) z.from = m(z.from);
     for (const q of s.quests) for (const k of ['from', 'to', 'against']) if (q[k] != null) q[k] = m(q[k]);
     const ships = s.fleet.concat(...Object.values(s.props).map(P => P.dock || []));
@@ -1075,7 +1096,7 @@ function chartImage() { // the corner chart's land, drawn once from the land gri
 const DESERTS = [[-17, 16, 33, 31, 1], [36, 14, 58, 31, 1], [55, 24, 72, 32, .8], [76, 37, 112, 46, .75], [116, -31, 145, -19, .9],
   [13, -29, 25, -19, .7], [-71.5, -27, -69, -17, .9], [-117, 26, -104, 37, .75], [-71, -50, -66, -40, .5]];
 const ChartView = {
-  open: false, x: 0, y: 0, z: 0, wheel: 0, drag: null, mouse: null, hooked: false, back: null,
+  open: false, x: 0, y: 0, z: 0, wheel: 0, drag: null, pinch: null, mouse: null, hooked: false, back: null,
   DETAIL: .3, ZMAX: .7, // zoom at which the real coasts take over from the picture, and the closest you can look
   show(map, at = null, back = null) { // at: a port to centre on; back: called when the chart is closed (to return to the port menus)
     this.hook();
@@ -1087,14 +1108,31 @@ const ChartView = {
   cursor(c) { const cv = document.getElementById('c'); if (cv && cv.style.cursor !== c) cv.style.cursor = c; },
   hook() { // mouse handling, attached the first time the chart is opened
     if (this.hooked) return; this.hooked = true;
-    addEventListener('wheel', e => { if (this.open && !UI.open) { this.wheel += e.deltaY; this.mouse = { x: e.clientX, y: e.clientY }; e.preventDefault(); } }, { passive: false });
-    addEventListener('pointerdown', e => { if (this.open && !UI.open) this.drag = { x: e.clientX, y: e.clientY }; });
-    addEventListener('pointerleave', () => { this.mouse = null; });
-    addEventListener('pointermove', e => {
-      this.mouse = { x: e.clientX, y: e.clientY };
-      if (this.open && this.drag) { this.x -= (e.clientX - this.drag.x) / this.z; this.y -= (e.clientY - this.drag.y) / this.z; this.drag = { x: e.clientX, y: e.clientY }; }
+    // positions are in game pixels (TouchUI.pt), which differ from CSS pixels when a small touch screen is scaled down
+    const P = TouchUI.pt, fingers = new Map(); // fingers: touches on the chart, for a two-finger pinch
+    const pinch = () => { const [a, b] = [...fingers.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
+    addEventListener('wheel', e => { if (this.open && !UI.open) { this.wheel += e.deltaY; this.mouse = P(e); e.preventDefault(); } }, { passive: false });
+    addEventListener('pointerdown', e => {
+      if (!this.open || UI.open) return;
+      const p = P(e); this.mouse = p;
+      if (e.pointerType === 'touch') { fingers.set(e.pointerId, p); if (fingers.size === 2) { this.pinch = pinch(); this.drag = null; return; } }
+      if (fingers.size < 2) this.drag = p;
     });
-    addEventListener('pointerup', () => { this.drag = null; });
+    addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') this.mouse = null; }); // a tapped port keeps its tooltip
+    addEventListener('pointermove', e => {
+      const p = P(e);
+      if (fingers.has(e.pointerId)) fingers.set(e.pointerId, p);
+      if (this.open && this.pinch && fingers.size === 2) {
+        const q = pinch(), W = Game.W, H = Game.H;
+        this.x -= (q.x - this.pinch.x) / this.z; this.y -= (q.y - this.pinch.y) / this.z; // the two fingers drag as well as zoom
+        if (this.pinch.d > 0) this.zoomBy(q.d / this.pinch.d, W, H, q);
+        this.pinch = q; return;
+      }
+      this.mouse = p;
+      if (this.open && this.drag) { this.x -= (p.x - this.drag.x) / this.z; this.y -= (p.y - this.drag.y) / this.z; this.drag = p; }
+    });
+    const lift = e => { fingers.delete(e.pointerId); if (fingers.size < 2) this.pinch = null; this.drag = null; };
+    addEventListener('pointerup', lift); addEventListener('pointercancel', lift);
   },
   fit(W, H) { return Math.min(W / WORLD.W, (H - 60) / WORLD.H); }, // the whole world on screen
   zoomBy(f, W, H, at) { // zoom, keeping the world point under `at` (screen) where it is
@@ -1165,10 +1203,13 @@ const ChartView = {
     c.putImageData(img, 0, 0);
     return (LAND.bigChart = cv);
   },
+  TIP_W: 300, // the port tooltip's width in px
   tip(ctx, W, H, pi, x, y) { // what a port makes and wants, at today's prices
     const s = Campaign.s, pt = PORTS[pi], lines = [];
     lines.push(['Makes: ' + pt.makes.map(g => `${goodName(g)} ${buyPrice(pt, g)}g`).join(', '), '#cfe8b0']);
     lines.push(['Wants: ' + pt.wants.map(g => `${goodName(g)} ${goodPrice(pt, g)}g`).join(', '), '#ffd9a0']);
+    const moved = TRADE_GOODS.map(g => [g, News.mul(pi, g, s.day)]).filter(([, m]) => Math.abs(m - 1) > .08); // goods the news has moved
+    if (moved.length) lines.push(['News: ' + moved.map(([g, m]) => `${goodName(g)} ${m > 1 ? '▲' : '▼'} ${goodPrice(pt, g)}g`).join(', '), '#ffb0a0']);
     if (isShipyard(pt)) lines.push(['⚒ Shipyard: ships for your fleet are built here', 'rgba(245,233,200,.8)']);
     // your interests here: headquarters, property, ships lying in port, goods or gold waiting
     const P = propsOf(s, pi), mine = '#ffe7a8', c = s.consign[pi];
@@ -1179,14 +1220,23 @@ const ChartView = {
     const lying = s.fleet.filter(f => f.task && f.at === pi);
     if (lying.length) lines.push([`⚑ In port: ${lying.map(f => f.name).join(', ')}`, mine]);
     if (c && (c.gold || Object.keys(c.goods).length)) lines.push([`📜 Waiting with the harbourmaster: ${[c.gold && `${c.gold} gold`, ...Object.keys(c.goods).map(k => `${goodName(k)} ${c.goods[k]}`)].filter(Boolean).join(', ')}`, mine]);
-    ctx.font = 'bold 15px Georgia';
-    let tw = ctx.measureText(pt.name).width; ctx.font = '12px Georgia';
-    for (const [l] of lines) tw = Math.max(tw, ctx.measureText(l).width);
-    const bw = tw + 20, bh = 30 + lines.length * 17;
-    const bx = clamp(x + 14, 6, W - bw - 6), by = y + 14 + bh > H - 6 ? y - 14 - bh : y + 14;
+    // a box of fixed width, each line word-wrapped to fit it (its run-on rows indented a little)
+    const bw = Math.min(this.TIP_W, W - 12), tw = bw - 20, IND = 10, rows = [];
+    ctx.font = '12px Georgia';
+    for (const [l, col] of lines) {
+      let cur = '', first = true;
+      for (const word of l.split(' ')) {
+        const next = cur ? cur + ' ' + word : word;
+        if (cur && ctx.measureText(next).width > tw - (first ? 0 : IND)) { rows.push([cur, col, !first]); cur = word; first = false; }
+        else cur = next;
+      }
+      rows.push([cur, col, !first]);
+    }
+    const bh = 30 + rows.length * 16;
+    const bx = clamp(x + 14, 6, W - bw - 6), by = y + 14 + bh > H - 6 ? Math.max(6, y - 14 - bh) : y + 14;
     ctx.fillStyle = '#1e1208'; ctx.fillRect(bx, by, bw, bh); hudPanel(ctx, bx, by, bw, bh);
     hudText(ctx, pt.name, bx + 10, by + 15, 15, '#ffd24a', 'left', true);
-    lines.forEach(([l, col], n) => hudText(ctx, l, bx + 10, by + 34 + n * 17, 12, col));
+    rows.forEach(([t, col, ind], n) => hudText(ctx, t, bx + 10 + (ind ? IND : 0), by + 34 + n * 16, 12, col));
   },
   draw(ctx, W, H, map) {
     if (!this.z) this.update(0, W, H, map);
@@ -1246,7 +1296,8 @@ const ChartView = {
     }
     hudPanel(ctx, W / 2 - 330, 8, 660, 50);
     hudText(ctx, 'Chart of the Known World', W / 2, 24, 17, '#fff3c4', 'center', true);
-    hudText(ctx, `Drag or WASD to pan · wheel or +/− to zoom · hover a port for its trade · Space: find your ship · C or Esc: back to ${this.back ? 'port' : 'sea'}`, W / 2, 45, 12, 'rgba(245,233,200,.85)', 'center');
+    hudText(ctx, TouchUI.on ? `Drag to pan · pinch or +/− to zoom · tap a port for its trade · ⌖ find your ship · ✕ back to ${this.back ? 'port' : 'sea'}`
+      : `Drag or WASD to pan · wheel or +/− to zoom · hover a port for its trade · Space: find your ship · C or Esc: back to ${this.back ? 'port' : 'sea'}`, W / 2, 45, 12, 'rgba(245,233,200,.85)', 'center');
     if (hov) this.tip(ctx, W, H, hov.i, hov.x, hov.y);
   },
 };
@@ -1463,6 +1514,7 @@ class WorldMap {
   update(dt) {
     const s = Campaign.s, p = this.ship;
     this.t += dt; s.day += dt / 25; this.safe -= dt; NAV.budget = 4; // routes planned per frame
+    News.tick(s); // a new day's news
     this.wind.dir += (this.wind.drift + Math.sin(this.t * .07) * .02) * dt;
     p.rudder = (Input.is('d', 'ArrowRight') ? 1 : 0) - (Input.is('a', 'ArrowLeft') ? 1 : 0);
     if (Input.was('w', 'ArrowUp')) p.sail = Math.min(1, p.sail + .5);
@@ -1673,10 +1725,10 @@ class WorldMap {
       : s.boss === 1 ? 'Quest: Admiral Mordrake hunts you aboard the Iron Leviathan — sink or seize her!'
         : 'You rule the Shattered Sea. Sail on, Captain.';
     hudText(ctx, quest, W / 2, 24, 15, '#fff3c4', 'center', true);
-    hudText(ctx, 'A/D steer · W/S sails · Enter dock · C chart · F fleet orders · L log / save · H help · M mute · Esc menu', 16, H - 16, 12, 'rgba(245,233,200,.75)');
+    if (!TouchUI.on) hudText(ctx, 'A/D steer · W/S sails · Enter dock · C chart · F fleet orders · L log / save · H help · M mute · Esc menu', 16, H - 16, 12, 'rgba(245,233,200,.75)');
     drawWindRose(ctx, W - 60, 60, this.wind, p.heading);
     drawMessages(ctx, this.msgs, W);
-    if (this.nearPort) hudText(ctx, `Press ENTER to dock at ${this.nearPort.name}`, W / 2, H - 70, 22, '#ffd24a', 'center', true);
+    if (this.nearPort && !TouchUI.on) hudText(ctx, `Press ENTER to dock at ${this.nearPort.name}`, W / 2, H - 70, 22, '#ffd24a', 'center', true); // touch screens get a Dock button
     if (this.searchWarn) hudText(ctx, 'A navy patrol is close: they will search you and find the contraband!', W / 2, H - 100, 18, '#ff9a8a', 'center', true);
     // chart: it scrolls east–west to keep you in the middle, as the world wraps
     const mw = clamp(W * .26, 240, 340), mh = mw * WORLD.H / WORLD.W, mx = W - mw - 14, my = H - mh - 14, k = mw / WORLD.W;
